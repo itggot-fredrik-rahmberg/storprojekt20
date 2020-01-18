@@ -5,5 +5,6 @@
 ## 2. Vyer (visa bildskisser på dina sidor)
 
 ## 3. Databas med ER-diagram (Bild)
-    
+    https://www.draw.io/
+    Untitled Diagram.jpg första utkast
 ## 4. Arkitektur (Beskriv filer och mappar - vad gör/inehåller de?)
