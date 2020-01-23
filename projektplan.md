@@ -5,6 +5,6 @@
 ## 2. Vyer (visa bildskisser på dina sidor)
 
 ## 3. Databas med ER-diagram (Bild)
-    https://www.draw.io/
-    Untitled Diagram.jpg första utkast
+    Jag har använt mig av https://www.draw.io/ för att rita mitt ER-diagram. Bilden heter Octagon_Diagram.jpg och visar ett ER-diagram över hur min sida kommer att fungera. 
 ## 4. Arkitektur (Beskriv filer och mappar - vad gör/inehåller de?)
+    
