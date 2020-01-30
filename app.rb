@@ -43,6 +43,24 @@ post("/create_user") do
     security = params[:security]
     mail = params[:mail]
     db = connect_to_db("db/db.db")
-    result = db.execute("INSERT INTO users (name, password, rank, security_level, mail) VALUES (?,?,?,?,?)", name, password, rank, security, mail)
+    db.execute("INSERT INTO users (name, password, rank, security_level, mail) VALUES (?,?,?,?,?)", name, password, rank, security, mail)
     redirect("/create")
+end
+
+get("/create_post") do
+    slim(:create_post)
+end
+
+post("/create_post") do
+    title = params[:title]
+    text = params[:text]
+    genre = params[:genre]
+    security = params[:rank]
+    db = connect_to_db("db/db.db")
+    db.execute("INSERT INTO posts (title, text, genre, security_level) VALUES (?,?,?,?)", title, text, genre, security)
+    redirect("/create_post")
+end
+
+get("/home/gaming") do
+    slim(:gaming)
 end
