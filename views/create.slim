@@ -7,3 +7,11 @@ form action = "/create_user" method = "post"
     input type = "text" name = "security" placeholder = "security level"
     input type = "text" name = "mail" placeholder = "mail"    
     input type = "submit" value = "Create user"
+
+h3 All Users shown
+
+ol
+ - users.each do |item|
+   li = item
+   form action = "/delete_user/#{item["id"]}/delete" method = "post"
+        input type = "submit" value = "Delete_user"

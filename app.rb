@@ -7,21 +7,27 @@ load 'db_functions.rb'
 
 enable :sessions
 
+#This checks if the user is signed in everytime they change route.
+before do 
+    if (session[:id] ==  nil) && (request.path_info != '/') && (request.path_info != '/login') 
+      redirect("/")
+    end
+end
+
 get("/") do
     slim(:index)
 end
 
 post("/login") do
-
+    login_mail = params["login_mail"]
     login_password = params["login_password"]
 
-    db = SQLite3::Database.new("db/db.db")
-    db.results_as_hash = true
+    db = connect_to_db("db/db.db")
 
-    result = db.execute("SELECT id, password_digest FROM users WHERE username=?", [login_username])
+    result = db.execute("SELECT id, password FROM users WHERE mail=?", [login_mail])
 
     user_id = result.first["id"]
-    password_digest = result.first["password_digest"]
+    password_digest = result.first["password"]
     if BCrypt::Password.new(password_digest) == login_password 
         session[:id] = user_id
         redirect("/home")
@@ -33,7 +39,9 @@ get("/home") do
 end
 
 get("/create") do
-    slim(:create)
+    db = connect_to_db("db/db.db")
+    result = db.execute("SELECT * FROM users")
+    slim(:create,locals:{users:result})
 end
 
 post("/create_user") do
@@ -43,7 +51,15 @@ post("/create_user") do
     security = params[:security]
     mail = params[:mail]
     db = connect_to_db("db/db.db")
-    db.execute("INSERT INTO users (name, password, rank, security_level, mail) VALUES (?,?,?,?,?)", name, password, rank, security, mail)
+    password_digest = BCrypt::Password.create(password)
+    db.execute("INSERT INTO users (name, password, rank, security_level, mail) VALUES (?,?,?,?,?)", name, password_digest, rank, security, mail)
+    redirect("/create")
+end
+
+post("/delete_user/:id/delete") do
+    id = params[:id].to_i
+    db = connect_to_db("db/db.db")
+    result = db.execute("DELETE FROM users WHERE id = ?", id)
     redirect("/create")
 end
 
@@ -62,5 +78,12 @@ post("/create_post") do
 end
 
 get("/home/gaming") do
-    slim(:gaming)
+    db = connect_to_db("db/db.db")
+    result = db.execute("SELECT * FROM posts")
+    slim(:gaming,locals:{posts:result})
+end
+
+get("/logout") do
+    session[:id] = nil
+    redirect("/")
 end
