@@ -1,5 +1,6 @@
 h1 Gaming
 
 - posts.each do |item|
-  h2 = item["title"]
-  p = item["text"]
+    .post
+        h2.post_title = item["title"]
+        p class="post_text" = item["text"]

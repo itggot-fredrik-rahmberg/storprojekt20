@@ -84,6 +84,13 @@ get("/home/gaming") do
     slim(:gaming,locals:{posts:result})
 end
 
+get("/home/other") do
+    db = connect_to_db("db/db.db")
+    other = "other"
+    result = db.execute("SELECT * FROM posts WHERE genre = ?", other)
+    slim(:other,locals:{posts:result})
+end
+
 get("/logout") do
     session[:id] = nil
     redirect("/")
