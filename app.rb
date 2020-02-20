@@ -79,7 +79,8 @@ end
 
 get("/home/gaming") do
     db = connect_to_db("db/db.db")
-    result = db.execute("SELECT * FROM posts")
+    gaming = "gaming"
+    result = db.execute("SELECT * FROM posts WHERE genre = ?", gaming)
     slim(:gaming,locals:{posts:result})
 end
 
