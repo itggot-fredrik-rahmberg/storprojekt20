@@ -93,7 +93,7 @@ end
 
 post("/update_post/:id/update") do
     id = params[:id].to_i
-    text = params["text"]
+    text = params["content"]
     db = SQLite3::Database.new("db/db.db")
     db.results_as_hash = true
     result = db.execute("UPDATE posts SET text = ? WHERE id = ?", text, id)
