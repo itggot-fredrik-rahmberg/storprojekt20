@@ -4,7 +4,7 @@ h1 Gaming
     .post
         h2.post_title = item["title"]
         p class="post_text" = item["text"]
-
+        p = item["op"]
         ul
         -   posts.each do |item|
             form action = "/delete_post/#{item["id"]}/delete" method = "post"

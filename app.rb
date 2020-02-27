@@ -24,12 +24,13 @@ post("/login") do
 
     db = connect_to_db("db/db.db")
 
-    result = db.execute("SELECT id, password FROM users WHERE mail=?", [login_mail])
-
-    user_id = result.first["id"]
-    password_digest = result.first["password"]
+    result = db.execute("SELECT * FROM users WHERE mail=?", [login_mail]).first
+    name = result["name"]
+    user_id = result["id"]
+    password_digest = result["password"]
     if BCrypt::Password.new(password_digest) == login_password 
         session[:id] = user_id
+        session[:name] = name
         redirect("/home")
     end
 end
@@ -71,8 +72,10 @@ post("/create_post") do
     title = params[:title]
     text = params[:text]
     genre = params[:genre]
+    op = session[:name]
+    p op
     db = connect_to_db("db/db.db")
-    db.execute("INSERT INTO posts (title, text, genre) VALUES (?,?,?)", title, text, genre)
+    db.execute("INSERT INTO posts (title, text, genre, op) VALUES (?,?,?,?)", title, text, genre, op)
     redirect("/create_post")
 end
 
