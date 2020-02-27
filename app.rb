@@ -71,9 +71,8 @@ post("/create_post") do
     title = params[:title]
     text = params[:text]
     genre = params[:genre]
-    security = params[:rank]
     db = connect_to_db("db/db.db")
-    db.execute("INSERT INTO posts (title, text, genre, security_level) VALUES (?,?,?,?)", title, text, genre, security)
+    db.execute("INSERT INTO posts (title, text, genre) VALUES (?,?,?)", title, text, genre)
     redirect("/create_post")
 end
 
@@ -83,6 +82,23 @@ get("/home/gaming") do
     result = db.execute("SELECT * FROM posts WHERE genre = ?", gaming)
     slim(:gaming,locals:{posts:result})
 end
+
+post("/delete_post/:id/delete") do
+    id = params[:id].to_i
+    db = SQLite3::Database.new("db/db.db")
+    db.results_as_hash = true
+    result = db.execute("DELETE FROM posts WHERE id = ?", id)
+    redirect("/home")
+end
+
+post("/update_post/:id/update") do
+    id = params[:id].to_i
+    text = params["text"]
+    db = SQLite3::Database.new("db/db.db")
+    db.results_as_hash = true
+    result = db.execute("UPDATE posts SET text = ? WHERE id = ?", text, id)
+    redirect("/home")
+end  
 
 get("/home/other") do
     db = connect_to_db("db/db.db")
