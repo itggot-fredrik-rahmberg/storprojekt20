@@ -27,10 +27,12 @@ post("/login") do
     result = db.execute("SELECT * FROM users WHERE mail=?", [login_mail]).first
     name = result["name"]
     user_id = result["id"]
+    security = result["security_level"]
     password_digest = result["password"]
     if BCrypt::Password.new(password_digest) == login_password 
         session[:id] = user_id
         session[:name] = name
+        session[:security] = security
         redirect("/home")
     end
 end
@@ -39,13 +41,13 @@ get("/home") do
     slim(:home)
 end
 
-get("/create") do
+get("/users/create") do
     db = connect_to_db("db/db.db")
     result = db.execute("SELECT * FROM users")
-    slim(:create,locals:{users:result})
+    slim(:"/users/create",locals:{users:result})
 end
 
-post("/create_user") do
+post("/users/create_user") do
     name = params[:name]
     password = params[:password]
     rank = params[:rank]
@@ -54,7 +56,7 @@ post("/create_user") do
     db = connect_to_db("db/db.db")
     password_digest = BCrypt::Password.create(password)
     db.execute("INSERT INTO users (name, password, rank, security_level, mail) VALUES (?,?,?,?,?)", name, password_digest, rank, security, mail)
-    redirect("/create")
+    redirect("/users/create")
 end
 
 post("/delete_user/:id/delete") do
@@ -64,26 +66,21 @@ post("/delete_user/:id/delete") do
     redirect("/create")
 end
 
-get("/create_post") do
-    slim(:create_post)
-end
-
-post("/create_post") do
+get("/post/new") do
     title = params[:title]
     text = params[:text]
     genre = params[:genre]
     op = session[:name]
-    p op
     db = connect_to_db("db/db.db")
     db.execute("INSERT INTO posts (title, text, genre, op) VALUES (?,?,?,?)", title, text, genre, op)
-    redirect("/create_post")
+    slim(:"/post/new")
 end
 
-get("/home/gaming") do
+get("/home/genres/gaming") do
     db = connect_to_db("db/db.db")
     gaming = "gaming"
     result = db.execute("SELECT * FROM posts WHERE genre = ?", gaming)
-    slim(:gaming,locals:{posts:result})
+    slim(:"/genres/gaming",locals:{posts:result})
 end
 
 post("/delete_post/:id/delete") do
@@ -103,11 +100,11 @@ post("/update_post/:id/update") do
     redirect("/home")
 end  
 
-get("/home/other") do
+get("/home/genres/other") do
     db = connect_to_db("db/db.db")
     other = "other"
     result = db.execute("SELECT * FROM posts WHERE genre = ?", other)
-    slim(:other,locals:{posts:result})
+    slim(:"/genres/other",locals:{posts:result})
 end
 
 get("/logout") do
