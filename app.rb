@@ -3,6 +3,8 @@ require 'sinatra'
 require 'sqlite3'
 require 'bcrypt'
 
+require_relative 'models/get_info_from_user.rb'
+
 load 'db_functions.rb'
 
 enable :sessions
@@ -33,7 +35,7 @@ post("/login") do
 
     db = connect_to_db("db/db.db")
 
-    result = db.execute("SELECT * FROM users WHERE mail=?", [login_mail]).first
+    result = get_info_from_mail(login_mail)
 
     if login_mail = nil
         set_error("Invalid login details")
@@ -113,8 +115,7 @@ end
 #This route is used to delete posts
 post("/delete_post/:id/delete") do
     id = params[:id].to_i
-    db = SQLite3::Database.new("db/db.db")
-    db.results_as_hash = true
+    db = connect_to_db("db/db.db")
     result = db.execute("DELETE FROM posts WHERE id = ?", id)
     redirect("/home")
 end
@@ -122,8 +123,7 @@ end
 post("/update_post/:id/update") do
     id = params[:id].to_i
     text = params["content"]
-    db = SQLite3::Database.new("db/db.db")
-    db.results_as_hash = true
+    db = connect_to_db("db/db.db")
     result = db.execute("UPDATE posts SET text = ? WHERE id = ?", text, id)
     redirect("/home")
 end  
