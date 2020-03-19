@@ -35,7 +35,7 @@ post("/login") do
 
     result = db.execute("SELECT * FROM users WHERE mail=?", [login_mail]).first
 
-    if result.empty?
+    if login_mail = nil
         set_error("Invalid login details")
         redirect("/users/error")
     end
@@ -102,7 +102,13 @@ get("/home/genres/gaming") do
     db = connect_to_db("db/db.db")
     gaming = "gaming"
     result = db.execute("SELECT * FROM posts WHERE genre = ?", gaming)
-    slim(:"/genres/gaming",locals:{posts:result})
+
+    if session[:security] <= 1
+        slim(:"/genres/gaming",locals:{posts:result})
+    else
+        set_error("Too low security clearance")
+        redirect("/users/error")
+    end
 end
 #This route is used to delete posts
 post("/delete_post/:id/delete") do
