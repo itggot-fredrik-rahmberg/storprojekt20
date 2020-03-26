@@ -4,6 +4,8 @@ require 'sqlite3'
 require 'bcrypt'
 
 require_relative 'models/get_info_from_user.rb'
+require_relative 'models/info_posts.rb'
+require_relative 'models/BCrypt.rb'
 
 load 'db_functions.rb'
 
@@ -19,40 +21,59 @@ end
 def set_error(error)
     session[:error] = error
 end
-
+#This route is shown when an error message occurs
 get("/users/error") do
     slim(:"users/error")
 end
 
-#This is the standard route 
+#This is the standard route  when entering the website
 get("/") do
     slim(:index)
 end
 #This is the login route
 post("/login") do
+
+    if session[:now]
+        time = session[:now].split("_")
+        if Time.new(time[0], time[1], time[2], time[3], time[4], time[5]) > (Time.now - 300)
+            set_error("You have to wait 5 minutes until you try again")
+            redirect("/users/error")
+        end
+    end
+
     login_mail = params["login_mail"]
     login_password = params["login_password"]
 
-    db = connect_to_db("db/db.db")
-
     result = get_info_from_mail(login_mail)
 
-    if login_mail = nil
+    if login_mail == nil
         set_error("Invalid login details")
         redirect("/users/error")
     end
-    
+
+    attempts = session[:attempts] 
+    if attempts == nil
+        attempts = 0
+    end
+
     name = result["name"]
     user_id = result["id"]
     security = result["security_level"]
     password_digest = result["password"]
-    if BCrypt::Password.new(password_digest) == login_password 
+    if login(password_digest) == login_password 
         session[:id] = user_id
         session[:name] = name
         session[:security] = security
         redirect("/home")
     else
         set_error("Invalid login details")
+        attempts += 1
+        session[:attempts] = attempts
+
+        if attempts >= 3
+            session[:now] = Time.now().strftime('%Y_%m_%d_%H_%M_%S')
+        end
+
         redirect("/users/error")
     end
 end
@@ -62,9 +83,15 @@ get("/home") do
 end
 #Here an admin can create new users
 get("/users/create") do
-    db = connect_to_db("db/db.db")
-    result = db.execute("SELECT * FROM users")
-    slim(:"/users/create",locals:{users:result})
+
+    if session[:security] == 0
+        result = get_all_info_from_user()
+        slim(:"/users/create",locals:{users:result})
+    else
+        set_error("You couldn't enter this site because you're not an admin")
+        redirect("/users/error")
+    end
+
 end
 #This route is used to create new users
 post("/users/create_user") do
@@ -73,17 +100,17 @@ post("/users/create_user") do
     rank = params[:rank]
     security = params[:security]
     mail = params[:mail]
-    db = connect_to_db("db/db.db")
-    password_digest = BCrypt::Password.create(password)
-    db.execute("INSERT INTO users (name, password, rank, security_level, mail) VALUES (?,?,?,?,?)", name, password_digest, rank, security, mail)
+    password_digest = digest(password)
+
+    create_user(name, password_digest, rank, security, mail)
+
     redirect("/users/create")
 end
 #This is used to delete users
 post("/delete_user/:id/delete") do
     id = params[:id].to_i
-    db = connect_to_db("db/db.db")
-    result = db.execute("DELETE FROM users WHERE id = ?", id)
-    redirect("/create")
+    delete_user(id)
+    redirect("/users/create")
 end
 #This route is used to create a new post
 get("/post/new") do
@@ -95,36 +122,34 @@ post("/post/new_post") do
     text = params[:text]
     genre = params[:genre]
     op = session[:name]
-    db = connect_to_db("db/db.db")
-    db.execute("INSERT INTO posts (title, text, genre, op) VALUES (?,?,?,?)", title, text, genre, op)
+
+    create_post(title, text, genre, op)
+
     redirect("/post/new")
 end
 #This is the route for the genre Gaming
 get("/home/genres/gaming") do
-    db = connect_to_db("db/db.db")
     gaming = "gaming"
-    result = db.execute("SELECT * FROM posts WHERE genre = ?", gaming)
+    result = enter_genre(gaming)
 
     if session[:security] <= 1
         slim(:"/genres/gaming",locals:{posts:result})
     else
-        set_error("Too low security clearance")
+        set_error("Too low security clearance to enter this genre")
         redirect("/users/error")
     end
 end
 #This route is used to delete posts
 post("/delete_post/:id/delete") do
     id = params[:id].to_i
-    db = connect_to_db("db/db.db")
-    result = db.execute("DELETE FROM posts WHERE id = ?", id)
+    result = delete_post(id)
     redirect("/home")
 end
 #This route is used to update a post
 post("/update_post/:id/update") do
     id = params[:id].to_i
     text = params["content"]
-    db = connect_to_db("db/db.db")
-    result = db.execute("UPDATE posts SET text = ? WHERE id = ?", text, id)
+    result = update_post(text, id)
     redirect("/home")
 end  
 #This is the route for the genre Other

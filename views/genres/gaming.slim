@@ -4,9 +4,11 @@ h1 Gaming
     .post
         h2.post_title = item["title"]
         p class="post_text" = item["text"]
-        p = item["op"]
-        form action = "/delete_post/#{item["id"]}/delete" method = "post"
-            input type = "submit" value = "Delete_post"
-        form action = "/update_post/#{item["id"]}/update" method = "post"
-            textarea name = "content" = item["text"]
-            input type = "submit" value = "Update_post"
+        p original poster
+        p = item["name"]
+        - if session[:id] == item["user_id"] || session[:security] == 0
+            form action = "/delete_post/#{item["id"]}/delete" method = "post"
+                input type = "submit" value = "Delete_post"
+            form action = "/update_post/#{item["id"]}/update" method = "post"
+                textarea name = "content" = item["text"]
+                input type = "submit" value = "Update_post"
