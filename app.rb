@@ -11,6 +11,8 @@ load 'db_functions.rb'
 
 enable :sessions
 
+# Att göra Upvote för n-n. Cascade (ta bort user). Dok. MVC, REST-a resurser. 
+
 #This checks if the user is signed in everytime they change route.
 before do 
     if (session[:id] ==  nil) && (request.path_info != '/') && (request.path_info != '/login' && (request.path_info != '/users/error')) 
@@ -121,9 +123,9 @@ post("/post/new_post") do
     title = params[:title]
     text = params[:text]
     genre = params[:genre]
-    op = session[:name]
+    id = session[:id]
 
-    create_post(title, text, genre, op)
+    create_post(title, text, genre, id)
 
     redirect("/post/new")
 end
@@ -139,6 +141,16 @@ get("/home/genres/gaming") do
         redirect("/users/error")
     end
 end
+
+post("/upvote") do
+    user_id = session[:id]
+    post_id = params["post_id"]
+    upvote(user_id, post_id)
+
+    redirect("/home")
+end
+
+
 #This route is used to delete posts
 post("/delete_post/:id/delete") do
     id = params[:id].to_i

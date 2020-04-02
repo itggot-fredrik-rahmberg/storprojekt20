@@ -6,9 +6,14 @@ h1 Gaming
         p class="post_text" = item["text"]
         p original poster
         p = item["name"]
+        p = item["upvotes"]
         - if session[:id] == item["user_id"] || session[:security] == 0
             form action = "/delete_post/#{item["id"]}/delete" method = "post"
                 input type = "submit" value = "Delete_post"
             form action = "/update_post/#{item["id"]}/update" method = "post"
                 textarea name = "content" = item["text"]
                 input type = "submit" value = "Update_post"
+            form action = "/upvote" method = "post"
+                button type = "submit" value = "#{item["id"]}" name = "post_id" Upvote
+
+            
