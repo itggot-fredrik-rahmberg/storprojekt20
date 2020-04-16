@@ -10,14 +10,6 @@ def create_post(title, text, genre, id)
 
 end
 
-def enter_genre(genre)
-
-    db = connect_to_db("db/db.db")
-
-    db.execute("SELECT posts.*, users.name FROM posts LEFT JOIN users ON posts.user_id = users.id WHERE genre = ?", genre)
-
-end
-
 def delete_post(id)
 
     db = connect_to_db("db/db.db")

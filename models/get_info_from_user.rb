@@ -28,6 +28,10 @@ def delete_user(id)
 
     db = connect_to_db("db/db.db")
 
+    if db.execute("SELECT * FROM posts WHERE id = ?", id).length != 0
+        #delete all posts where user_id
+    end
+    
     db.execute("DELETE FROM users WHERE id = ?", id)
 
 end

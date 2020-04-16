@@ -6,12 +6,11 @@ require 'bcrypt'
 require_relative 'models/get_info_from_user.rb'
 require_relative 'models/info_posts.rb'
 require_relative 'models/BCrypt.rb'
+require_relative 'models/genre_info.rb'
 
 load 'db_functions.rb'
 
-enable :sessions
-
-# Att göra Upvote för n-n. Cascade (ta bort user). Dok. MVC, REST-a resurser. 
+enable :sessions 
 
 #This checks if the user is signed in everytime they change route.
 before do 
@@ -66,7 +65,7 @@ post("/login") do
         session[:id] = user_id
         session[:name] = name
         session[:security] = security
-        redirect("/home")
+        redirect("/show")
     else
         set_error("Invalid login details")
         attempts += 1
@@ -80,15 +79,15 @@ post("/login") do
     end
 end
 #This is the standard route when a user is logged in
-get("/home") do 
-    slim(:home)
+get("/show") do 
+    slim(:show)
 end
 #Here an admin can create new users
-get("/users/create") do
+get("/users/new") do
 
     if session[:security] == 0
         result = get_all_info_from_user()
-        slim(:"/users/create",locals:{users:result})
+        slim(:"/users/new",locals:{users:result})
     else
         set_error("You couldn't enter this site because you're not an admin")
         redirect("/users/error")
@@ -129,25 +128,34 @@ post("/post/new_post") do
 
     redirect("/post/new")
 end
-#This is the route for the genre Gaming
-get("/home/genres/gaming") do
-    gaming = "gaming"
-    result = enter_genre(gaming)
 
-    if session[:security] <= 1
-        slim(:"/genres/gaming",locals:{posts:result})
+get("/show/genres/:genre") do |genre| 
+
+    result = genre_info(genre) 
+
+    if result.length == 0
+        set_error("Genre not found")
+        redirect("/users/error")
+    end
+
+    if session[:security] <= result[0]["security"]
+        slim(:"/genres/show",locals:{posts:result})
     else
         set_error("Too low security clearance to enter this genre")
         redirect("/users/error")
     end
 end
 
+
+
+
+
 post("/upvote") do
     user_id = session[:id]
     post_id = params["post_id"]
     upvote(user_id, post_id)
 
-    redirect("/home")
+    redirect("/show")
 end
 
 
@@ -155,22 +163,16 @@ end
 post("/delete_post/:id/delete") do
     id = params[:id].to_i
     result = delete_post(id)
-    redirect("/home")
+    redirect("/show")
 end
 #This route is used to update a post
 post("/update_post/:id/update") do
     id = params[:id].to_i
     text = params["content"]
     result = update_post(text, id)
-    redirect("/home")
+    redirect("/show")
 end  
-#This is the route for the genre Other
-get("/home/genres/other") do
-    db = connect_to_db("db/db.db")
-    other = "other"
-    result = db.execute("SELECT * FROM posts WHERE genre = ?", other)
-    slim(:"/genres/other",locals:{posts:result})
-end
+
 #This route is used to logout
 get("/logout") do
     session[:id] = nil

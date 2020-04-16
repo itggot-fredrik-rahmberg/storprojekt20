@@ -1,4 +1,4 @@
-h1 Gaming
+h1 = posts[0]["name"]
 
 - posts.each do |item|
     .post
@@ -6,6 +6,7 @@ h1 Gaming
         p class="post_text" = item["text"]
         p original poster
         p = item["name"]
+        p Number of upvotes
         p = item["upvotes"]
         - if session[:id] == item["user_id"] || session[:security] == 0
             form action = "/delete_post/#{item["id"]}/delete" method = "post"
@@ -15,5 +16,3 @@ h1 Gaming
                 input type = "submit" value = "Update_post"
             form action = "/upvote" method = "post"
                 button type = "submit" value = "#{item["id"]}" name = "post_id" Upvote
-
-            
