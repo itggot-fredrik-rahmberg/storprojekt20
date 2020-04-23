@@ -3,14 +3,16 @@ require 'sinatra'
 require 'sqlite3'
 require 'bcrypt'
 
-require_relative 'models/get_info_from_user.rb'
-require_relative 'models/info_posts.rb'
-require_relative 'models/BCrypt.rb'
-require_relative 'models/genre_info.rb'
+require_relative 'models/model.rb'
+#require_relative 'models/info_posts.rb'
+#require_relative 'models/BCrypt.rb'
+#require_relative 'models/genre_info.rb'
 
 load 'db_functions.rb'
 
 enable :sessions 
+
+include Model
 
 #This checks if the user is signed in everytime they change route.
 before do 
@@ -22,16 +24,23 @@ end
 def set_error(error)
     session[:error] = error
 end
-#This route is shown when an error message occurs
+# Displays an error message
+#
 get("/users/error") do
     slim(:"users/error")
 end
 
-#This is the standard route  when entering the website
+# Display Landing Page
+#
 get("/") do
     slim(:index)
 end
-#This is the login route
+# Attempts login and updates the session
+#
+# @param [String] login_mail, The e-mail
+# @param [String] login_password, The password
+#
+# @see Model#login
 post("/login") do
 
     if session[:now]
@@ -105,19 +114,30 @@ post("/users/create_user") do
 
     create_user(name, password_digest, rank, security, mail)
 
-    redirect("/users/create")
+    redirect("/users/new")
 end
-#This is used to delete users
+# Deletes an exisiting user and redirects to '/users/create'
+#
+# @param [Integer] id, The ID of the user
+#
+# @see Model#delete_user
 post("/delete_user/:id/delete") do
     id = params[:id].to_i
     delete_user(id)
-    redirect("/users/create")
+    redirect("/users/new")
 end
 #This route is used to create a new post
 get("/post/new") do
     slim(:"/post/new")
 end
 
+# Creates a new post and redirects to '/post/new'
+#
+# @param [String] title, The title of the post
+# @param [String] text, The content of the post
+# @param [String] genre, The genre of the post
+#
+# @see Model#create_post
 post("/post/new_post") do
     title = params[:title]
     text = params[:text]
@@ -147,9 +167,12 @@ get("/show/genres/:genre") do |genre|
 end
 
 
-
-
-
+# Attempts to add a upvote to a post
+#
+# @param [Integer] user_id, The ID of the user
+# @param [Integer] post_id, The ID of the post
+#
+# @see Model#upvote
 post("/upvote") do
     user_id = session[:id]
     post_id = params["post_id"]
@@ -159,13 +182,22 @@ post("/upvote") do
 end
 
 
-#This route is used to delete posts
+# Deletes an existing post and redirects to '/show'
+#
+# @param [Integer] id, The ID of the post
+#
+# @see Model#delete_post
 post("/delete_post/:id/delete") do
     id = params[:id].to_i
     result = delete_post(id)
     redirect("/show")
 end
-#This route is used to update a post
+# Updates an existing post and redirects to '/show'
+#
+# @param [Integer] :id, The ID of the post
+# @param [String] content, The new content of the post
+#
+# @see Model#update_post
 post("/update_post/:id/update") do
     id = params[:id].to_i
     text = params["content"]
