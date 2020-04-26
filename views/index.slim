@@ -1,7 +1,30 @@
-h1 Welcome to Octagon 
-h2 This is a topsecret website, please enter your mail and password to enter
 
-form action = "/login" method = "post"
-    input type = "text" name = "login_mail" placeholder = "Mail"
-    input type = "password" name = "login_password" placeholder = "Password"
-    input type = "submit" value = "Login"
+- if session[:id] == nil
+
+    h1 Welcome to Octagon 
+    h2 This is a topsecret website, please enter your mail and password to enter
+
+    form action = "/login" method = "post"
+        input type = "text" name = "login_mail" placeholder = "Mail"
+        input type = "password" name = "login_password" placeholder = "Password"
+        input type = "submit" value = "Login"
+
+- else
+
+    h1 Homescreen
+
+    h2 Genres
+
+    h3 High security genres
+    nav
+        a href = "/genres/gaming" Gaming
+        a href = "/genres/memes" High security memes
+
+    h3 Medium security genres
+    nav
+        a href = "/genres/ask_octagon" Ask Octagon
+
+    h3 Low security genres
+    nav
+        a href = "/genres/suggestions" Suggestions
+        a href = "/genres/other" Others

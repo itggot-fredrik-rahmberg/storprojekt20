@@ -3,16 +3,23 @@ module Model
     require 'sqlite3'
     require 'bcrypt'
 
-
-    load 'db_functions.rb'
-
+    #This functions makes it so I don't have to repeat myself in module with these two lines of code
+    def connect_to_db(path) 
+        db = SQLite3::Database.new(path)
+        db.results_as_hash = true
+        return db
+    end 
+    # Attempts to recieve information from a particular mail
+    #
+    # @option params [String] mail The e-mail
+    #
     def get_info_from_mail(login_mail)
 
         db = connect_to_db("db/db.db")
 
         db.execute("SELECT * FROM users WHERE mail=?", [login_mail]).first
     end
-
+    # Attempts to recieve all information from all users
     def get_all_info_from_user()
 
         db = connect_to_db("db/db.db")
@@ -34,14 +41,15 @@ module Model
         db.execute("INSERT INTO users (name, password, rank, security_level, mail) VALUES (?,?,?,?,?)", name, password_digest, rank, security, mail)
 
     end
-
+    # Attempts to delete a user
+    #
+    # @option params [Integer] id The id of the user that will be deleted
+    #
     def delete_user(id)
 
         db = connect_to_db("db/db.db")
 
-        if db.execute("SELECT * FROM posts WHERE id = ?", id).length != 0
-            db.execute("DELETE FROM posts WHERE user_id = ?", id)
-        end
+        db.execute("DELETE FROM posts WHERE user_id = ?", id)
         
         db.execute("DELETE FROM users WHERE id = ?", id)
 
@@ -49,13 +57,15 @@ module Model
 
 
 
-
-
+    # Attempts to connect to a genre
+    #
+    # @option params [Integer] security The security clearance inside the company
+    #
     def genre_info(genre)
 
         db = connect_to_db("db/db.db")
     
-        db.execute("SELECT posts.title, posts.text, posts.id, posts.upvotes, genre.security, genre.name AS genre FROM genre LEFT JOIN posts ON genre.id = posts.genre LEFT JOIN users ON posts.user_id = users.id WHERE genre.name = ?", genre)
+        db.execute("SELECT posts.title, posts.text, posts.id, posts.upvotes, genre.security, genre.name, users.name AS username, posts.user_id FROM genre LEFT JOIN posts ON genre.id = posts.genre LEFT JOIN users ON posts.user_id = users.id WHERE genre.name = ?", genre)
     
     end
 

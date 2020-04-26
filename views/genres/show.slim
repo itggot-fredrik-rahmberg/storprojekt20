@@ -1,11 +1,10 @@
 h1 = posts[0]["name"]
-
 - posts.each do |item|
     .post
         h2.post_title = item["title"]
         p class="post_text" = item["text"]
         p original poster
-        p = item["name"]
+        p = item["username"]
         p Number of upvotes
         p = item["upvotes"]
         - if session[:id] == item["user_id"] || session[:security] == 0
